@@ -1,47 +1,53 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"github.com/zhangmingkai4315/GoWebStarter/InitTestWorkspace"
-	"gopkg.in/mgo.v2"
-)
-var Session *(mgo.Session);
-func init(){
-	var err error
-	Session,err=mgo.Dial("localhost")
-	if err!=nil{
-		panic(err)
-	}
-}
-func dopanic(){
-	defer func(){
-	  if e:=recover();e!=nil{
-		  fmt.Println("Recover from ",e)
-	  }
-	}()
+	"log"
+	"net/http"
+	// "path/filepath"
 
-	panic("I am panic")
-	fmt.Println("Never be called")
+	_ "gopkg.in/mgo.v2"
+)
+
+// var Session *(mgo.Session);
+func init() {
+	// var err error
+	// Session,err=mgo.Dial("localhost")
+	// if err!=nil{
+	// 	panic(err)
+	// }
+}
+
+type messageHandler struct {
+	message string
+}
+
+func (m *messageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, m.message)
 }
 func main() {
-	fmt.Printf("Hello world :%v",InitTestWorkspace.Add(10,10))
-	fmt.Printf("Mongodb is ready:%v",Session);
-	defer Session.Close();
+	port := flag.String("p", "8000", "listening port")
+	directory := flag.String("d", "public", "static file directory")
+	flag.Parse()
 
-	x:=[]int{4:20};
-	for _,i := range x{
-		println(i);
-	}
-	y:=append(x,30);
-	//fmt.Printf("%v",y)
-	println(x,y); //[5/5]0xc8200f3e78 [6/10]0xc820010140
-	println(cap(x),len(x));
+	mux := http.NewServeMux()
+	// if path, err := filepath.Abs("public"); err == nil {
+	// 	log.Printf("Abs path is %v", path)
+	// }
 
-	fmt.Println("Starting to panic")
-	dopanic()
-	fmt.Println("Recorve after panic");
+	log.Printf("The static file dir is setting to %v", http.Dir(*directory))
 
+	// mux.Handle("/", http.FileServer(http.Dir(*directory)))
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir(*directory))))
 
+	mh1 := &messageHandler{"Hello"}
+	mh2 := &messageHandler{"World"}
 
+	mux.Handle("/hello", mh1)
+	mux.Handle("/world", mh2)
+
+	log.Println("Start the web server")
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 
 }
