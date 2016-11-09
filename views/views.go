@@ -18,7 +18,7 @@ func init() {
 
 func RenderTemplate(w http.ResponseWriter, name string, temp string, viewModel interface{}) {
 	tmpl, ok := templates[name]
-	if ok != false {
+	if !ok {
 		http.Error(w, "The url is not exist", http.StatusNotFound)
 	}
 	err := tmpl.ExecuteTemplate(w, temp, viewModel)

@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"views"
+	"models"
+	"time"
 )
 
 // get /login handler
@@ -14,12 +16,19 @@ func GetLoginHandler(w http.ResponseWriter, r *http.Request) {
 
 // post /login handler
 func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "post login")
+	//fmt.Fprintf(w, "post login")
+	var user models.User
+	r.ParseForm()
+	user.Username=r.PostFormValue("username")
+	user.Password=r.PostFormValue("password")
+	user.CreatedAt=time.Now()
+	fmt.Fprintf(w,"%v",user)
 }
+
 
 // get /SignUp handler
 func GetSignUpHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "SignUp page")
+	views.RenderTemplate(w, "signup", "base", struct{}{})
 }
 
 // post /SignUp handler

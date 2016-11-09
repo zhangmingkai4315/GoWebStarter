@@ -5,4 +5,12 @@
 
 {{define "body"}}
 <h1>This is a signup page</h1>
+
+<form action="/signup" method="post">
+    <p>Username:<br> <input type="text" name="username"></p>
+    <p>Email:<br> <input type="text" name="email"></p>
+    <p>Password:<br> <input type="text" name="password"></p>
+    <p>Confirm Password:<br> <input type="text" name="password2"></p>
+    <p><input type="submit" value="submit"/>&nbsp;<a href="/login">Login</a></p>
+</form>
 {{end}}
