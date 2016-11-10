@@ -3,7 +3,6 @@ package main
 import (
 	"controllers"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -12,12 +11,7 @@ import (
 	_ "gopkg.in/mgo.v2"
 )
 
-func NotExistHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "NotExist 404")
-}
 
-func iconHandler(w http.ResponseWriter, r *http.Request) {
-}
 
 func main() {
 	// 解析输入的参数
@@ -25,33 +19,36 @@ func main() {
 	// directory := flag.String("d", "public", "static file directory")
 	flag.Parse()
 
-	// 创建复用器
-	//r := mux.NewRouter().StrictSlash(false)
-	//
-	//mux:=http.NewServeMux()
-	//mux.HandleFunc("/favicon.ico",iconHandler)
 
-	r:=mux.NewRouter()
-
+	router:=mux.NewRouter()
+	authRouter:=mux.NewRouter().PathPrefix("/admin").Subrouter().StrictSlash(true)
+	authRouter.HandleFunc("/",controllers.AdminIndexHandler)
+	router.PathPrefix("/admin").Handler(
+		negroni.New(
+			negroni.HandlerFunc(controllers.AdminMiddleware),
+			negroni.Wrap(authRouter)))
 
 	//设置静态文件目录
-	//fs := http.FileServer(http.Dir("public"))
-	//r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", controllers.LoggingHandler(fs)))
+	fs := http.FileServer(http.Dir("public"))
+	router.PathPrefix("/static/").Handler(http.StripPrefix("/static/",fs))
 
 	n:=negroni.New()
 	n.Use(negroni.HandlerFunc(controllers.StartTimeCostMiddleware))
-	n.Use(negroni.NewStatic(http.Dir("/public")))
 
 
 	// 路由设置
-	r.HandleFunc("/login", controllers.GetLoginHandler).Methods("Get")
-	r.HandleFunc("/login", controllers.PostLoginHandler).Methods("POST")
+	router.HandleFunc("/login", controllers.GetLoginHandler).Methods("Get")
+	router.HandleFunc("/login", controllers.PostLoginHandler).Methods("POST")
 	//http.Handle("/login",controllers.AddTimeCostHandler(r))
 
-	r.HandleFunc("/signup", controllers.GetSignUpHandler).Methods("Get")
-	r.HandleFunc("/signup", controllers.PostSignUpHandler).Methods("POST")
+
+
+	router.HandleFunc("/signup", controllers.GetSignUpHandler).Methods("Get")
+	router.HandleFunc("/signup", controllers.PostSignUpHandler).Methods("POST")
 	n.Use(negroni.HandlerFunc(controllers.EndTimeCostMiddleware))
-	n.UseHandler(r)
+	n.UseHandler(router)
+
+
 	log.Println("Start the web server")
 	server := &http.Server{
 		Addr:           "localhost:" + *port,
@@ -61,5 +58,4 @@ func main() {
 		MaxHeaderBytes: 1 << 20,
 	}
 	log.Fatal(server.ListenAndServe())
-
 }

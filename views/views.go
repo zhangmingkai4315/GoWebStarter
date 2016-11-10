@@ -14,6 +14,7 @@ func init() {
 	templates["index"] = template.Must(template.ParseFiles("views/index.html", "views/base.html"))
 	templates["login"] = template.Must(template.ParseFiles("views/login.html", "views/base.html"))
 	templates["signup"] = template.Must(template.ParseFiles("views/signup.html", "views/base.html"))
+	templates["admin"] = template.Must(template.ParseFiles("views/admin/index.html", "views/base.html"))
 }
 
 func RenderTemplate(w http.ResponseWriter, name string, temp string, viewModel interface{}) {
