@@ -25,9 +25,26 @@ func EndTimeCostMiddleware(w http.ResponseWriter,r *http.Request,next http.Handl
 
 
 func AdminMiddleware(w http.ResponseWriter,r *http.Request,next http.HandlerFunc){
-	token, err := request.ParseFromRequestWithClaims(r, request.OAuth2Extractor, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return  verifyKey,nil
-	})
+	var tokenString string
+	var err error
+	var token *jwt.Token
+	for _,cookie:=range r.Cookies(){
+		if cookie.Name=="token"{
+			tokenString=cookie.Value;
+		}
+	}
+
+	if tokenString =="" {
+		//parse with authorized header
+		token, err = request.ParseFromRequestWithClaims(r, request.OAuth2Extractor, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return  verifyKey,nil
+		})
+	}else{
+		token, err = jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return verifyKey, nil
+		})
+	}
+
 	if err!=nil{
 		switch err.(type) {
 		case *jwt.ValidationError:

@@ -79,29 +79,28 @@ func jsonResponse(response interface{},w http.ResponseWriter){
 	w.Header().Set("Content-Type","application/json")
 	w.Write(json)
 }
+
+// get /logout handler
+func GetLogoutHandler(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w,&http.Cookie{Name:"token",Value:"",Expires:time.Now().Add(time.Hour*24)})
+	http.Redirect(w,r,"/login",http.StatusFound)
+}
+
 // get /login handler
 func GetLoginHandler(w http.ResponseWriter, r *http.Request) {
 	views.RenderTemplate(w, "login", "base", struct{}{})
 }
 
-
-
 func createToken(user string) (string, error) {
 	// create a signer for rsa 256
 	t := jwt.New(jwt.GetSigningMethod("RS256"))
-
-	// set our claims
 	t.Claims = &CustomClaims{
 		&jwt.StandardClaims{
-			// set the expire time
-			// see http://tools.ietf.org/html/draft-ietf-oauth-json-web-token-20#section-4.1.4
-			ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
+			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 		},
 		"level1",
 		CustomerInfo{user, "member"},
 	}
-	log.Println(signKey)
-	// Creat token string
 	return t.SignedString(signKey)
 }
 
@@ -109,7 +108,6 @@ func createToken(user string) (string, error) {
 
 // post /login handler
 func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
-	//fmt.Fprintf(w, "post login")
 	var user models.User
 	r.ParseForm()
 	user.Username=r.PostFormValue("username")
@@ -117,20 +115,21 @@ func PostLoginHandler(w http.ResponseWriter, r *http.Request) {
 	user.CreatedAt=time.Now()
 	//fmt.Fprintf(w,"%v",user)
 	if user.Username!="mike" && user.Password!="123456"{
-		w.WriteHeader(http.StatusForbidden)
-		fmt.Fprintf(w,"Authenticate Fail")
+		http.Redirect(w,r,"/login",http.StatusForbidden)
 		return
 	}
 
 	tokenString,err:=createToken(user.Username)
 	if err!=nil{
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(w,"Error While Signing Token!")
-		log.Printf("Token signing error:%v\n",err)
+		//w.WriteHeader(http.StatusInternalServerError)
+		//fmt.Fprintf(w,"Error While Signing Token!")
+		http.Redirect(w,r,"/login",http.StatusInternalServerError)
 		return
 	}
+	http.SetCookie(w,&http.Cookie{Name:"token",Value:tokenString,Expires:time.Now().Add(time.Hour*24)})
 	response:=Token{tokenString}
 	jsonResponse(response,w)
+	return
 }
 
 
