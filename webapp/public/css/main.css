@@ -1,0 +1,12 @@
+.page-header{
+    padding-bottom: 9px;
+    margin: 40px 0 20px;
+    border-bottom: 1px solid #eee
+}
+.error{
+    font-weight: 100;
+    color: red!important;
+}
+.hidden{
+    display:none
+}

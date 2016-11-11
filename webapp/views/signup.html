@@ -1,0 +1,35 @@
+{{define "head"}}
+<meta charset="utf-8">
+<title>Golang is awsome!</title>
+{{end}}
+
+{{define "body"}}
+<div class="row">
+    <div class="header col-md-12">
+        <h1 class="page-header">This Is A Sign Up Page</h1>
+    </div>
+    <div class="body col-md-4 col-sm-12">
+        <form role="form" name="signup_form">
+            <div class="form-group">
+                <label for="InputUsername">Username</label>
+                <input type="text" class="form-control" id="InputUsername" name="username" >
+            </div>
+            <div class="form-group">
+                <label for="InputEmail">Email</label>
+                <input type="email" class="form-control" id="InputEmail" name="email" >
+            </div>
+            <div class="form-group">
+                <label for="InputPassword">Password</label>
+                <input type="password" class="form-control" id="InputPassword" name="password" >
+            </div>
+            <div class="form-group">
+                <label for="InputPassword2">Confirm Password</label>
+                <input type="password" class="form-control" id="InputPassword2" name="password2">
+            </div>
+            <button type="submit" class="btn btn-default" id="btn_sign_up">Sign Up</button>
+            <a class="btn btn-default" href="/login">Login</a>
+            <div class="alert alert-danger hidden" role="alert" id="auth_alert"></div>
+        </form>
+    </div>
+</div>
+{{end}}
